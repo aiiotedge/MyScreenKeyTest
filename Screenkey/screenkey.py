@@ -64,6 +64,7 @@ class Screenkey(Gtk.Window):
                             'mods_mode': 'normal',
                             'mods_only': False,
                             'multiline': False,
+                            'max_lines': 0,
                             'vis_shift': False,
                             'vis_space': True,
                             'geometry': None,
@@ -81,6 +82,8 @@ class Screenkey(Gtk.Window):
             for k, v in options.items():
                 if v is not None:
                     self.options[k] = v
+        if self.options['max_lines']:
+            self.options['multiline'] = True
 
         self.set_keep_above(True)
         self.set_accept_focus(False)
@@ -279,6 +282,15 @@ class Screenkey(Gtk.Window):
             return
 
         _, attr, text, _ = Pango.parse_markup(markup, -1, ' ')
+        max_lines = self.options.max_lines
+        if max_lines > 0:
+            split = text.split('\n')
+            if len(split) >= max_lines:
+                text = '\n'.join(split[-max_lines:])
+            else:
+                insert = [''] * (max_lines - len(split))
+                split = insert + split
+                text = '\n'.join(split)
         self.label.set_text(text)
         self.label.set_attributes(attr)
         self.update_font()

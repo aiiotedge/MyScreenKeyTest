@@ -50,6 +50,8 @@ def main():
                     help=_("show only keys with modifiers pressed"))
     ap.add_argument("--multiline", action="store_true", default=None,
                     help=_("span text over multiple lines"))
+    ap.add_argument("--max-lines", type=int, metavar='LINES',
+                    help=_("Keep only specified lines in multiline"))
     ap.add_argument("--vis-shift", action="store_true", default=None,
                     help=_("always show Shift when modifiers are pressed"))
     ap.add_argument("--no-whitespace", dest='vis_space', action="store_false", default=None,
@@ -76,7 +78,7 @@ def main():
     options = Options()
     for arg in ['timeout', 'position', 'persist', 'font_desc', 'font_color', 'bg_color',
                 'font_size', 'geometry', 'key_mode', 'bak_mode', 'mods_mode', 'mods_only',
-                'multiline', 'vis_shift', 'vis_space', 'screen', 'no_systray',
+                'multiline', 'max_lines', 'vis_shift', 'vis_space', 'screen', 'no_systray',
                 'opacity', 'ignore', 'compr_cnt']:
         if getattr(args, arg) is not None:
             options[arg] = getattr(args, arg)
