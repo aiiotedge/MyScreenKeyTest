@@ -60,6 +60,7 @@ class Screenkey(Gtk.Window):
                             'bg_color': 'black',
                             'opacity': 0.8,
                             'key_mode': 'composed',
+                            'keep_history': False,
                             'bak_mode': 'baked',
                             'mods_mode': 'normal',
                             'mods_only': False,
@@ -311,8 +312,16 @@ class Screenkey(Gtk.Window):
     def on_timeout_main(self):
         if not self.options.persist:
             self.hide()
-        self.label.set_text('')
-        self.labelmngr.clear()
+        text = self.label.get_text()
+        if self.options.max_lines > 0 and self.options.keep_history:
+            text = text.replace('⏎', '')
+            split = text.split('\n')
+            split = split[1:] + ['']
+            text = '\n'.join(split)
+        else:
+            text = ''
+            self.labelmngr.clear()
+        self.label.set_text(text)
 
 
     def on_timeout_min(self):
