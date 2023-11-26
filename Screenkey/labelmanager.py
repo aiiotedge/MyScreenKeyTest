@@ -204,6 +204,7 @@ class LabelManager:
         self.recent_thr = recent_thr
         self.compr_cnt = compr_cnt
         self.ignore = ignore
+        self.super_pressed = False
         self.kl = None
         self.font_families = {x.get_name() for x in pango_ctx.list_families()}
         self.update_replacement_map()
@@ -365,6 +366,11 @@ class LabelManager:
                     ))
 
         if event.pressed == False:
+            if symbol == 'Super_L':
+                if self.super_pressed:
+                    self.logger.debug("print super key")
+                    self.data.append(KeyData(datetime.now(), False, True, True, True, "Super"))
+                    self.update_text()
             self.logger.debug("Key released {:5}(ks): {}".format(event.keysym, symbol))
             return
         if symbol in self.ignore:
@@ -373,6 +379,12 @@ class LabelManager:
         if event.filtered:
             self.logger.debug("Key filtered {:5}(ks): {}".format(event.keysym, symbol))
         else:
+            if symbol == 'Super_L':
+                self.logger.debug("mark super")
+                self.super_pressed = True
+            if self.super_pressed and event.modifiers['super']:
+                self.logger.debug("unmark super")
+                self.super_pressed = False
             state = "repeated" if event.repeated else "pressed"
             string = repr(event.string)
             self.logger.debug("Key {:8} {:5}(ks): {} ({}, mask: {:08b})".format
