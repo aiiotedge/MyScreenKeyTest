@@ -365,13 +365,17 @@ class LabelManager:
                         datetime.now(), button_id, event.pressed
                     ))
 
+        if self.pressed_only and event.repeated:
+            return
+
         if event.pressed == False:
             self.logger.debug("Key released {:5}(ks): {}".format(event.keysym, symbol))
             if self.pressed_only:
                 idx = next(enumerate(
                     (keydata for keydata in self.data if keydata.keysym == event.keysym)),
                     None)
-                del self.data[idx[0]]
+                if idx is not None:
+                    del self.data[idx[0]]
                 self.update_text()
             return
         if symbol in self.ignore:
