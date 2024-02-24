@@ -21,7 +21,7 @@ from datetime import datetime
 
 ReplData = namedtuple('ReplData', ['value', 'font', 'suffix'])
 KeyRepl  = namedtuple('KeyRepl',  ['bk_stop', 'silent', 'spaced', 'repl'])
-KeyData  = namedtuple('KeyData',  ['stamp', 'is_ctrl', 'bk_stop', 'silent', 'spaced', 'markup'])
+KeyData  = namedtuple('KeyData',  ['stamp', 'keysym', 'is_ctrl', 'bk_stop', 'silent', 'spaced', 'markup'])
 ButtonData = namedtuple('ButtonData',  ['stamp', 'btn', 'pressed'])
 
 REPLACE_SYMS = {
@@ -186,7 +186,7 @@ def keysym_to_mod(keysym):
 
 class LabelManager:
     def __init__(self, label_listener, image_listener, logger, key_mode,
-                 bak_mode, mods_mode, mods_only, multiline, vis_shift,
+                 bak_mode, mods_mode, mods_only, pressed_only, multiline, vis_shift,
                  vis_space, recent_thr, compr_cnt, ignore, pango_ctx,
                  enabled):
         self.key_mode = key_mode
@@ -198,6 +198,7 @@ class LabelManager:
         self.data = []
         self.enabled = enabled
         self.mods_only = mods_only
+        self.pressed_only = pressed_only
         self.multiline = multiline
         self.vis_shift = vis_shift
         self.vis_space = vis_space
@@ -366,6 +367,12 @@ class LabelManager:
 
         if event.pressed == False:
             self.logger.debug("Key released {:5}(ks): {}".format(event.keysym, symbol))
+            if self.pressed_only:
+                idx = next(enumerate(
+                    (keydata for keydata in self.data if keydata.keysym == event.keysym)),
+                    None)
+                del self.data[idx[0]]
+                self.update_text()
             return
         if symbol in self.ignore:
             self.logger.debug("Key ignored  {:5}(ks): {}".format(event.keysym, symbol))
@@ -420,7 +427,7 @@ class LabelManager:
            mod == '' and not event.modifiers['shift']:
             key_repl = self.replace_syms.get(symbol)
             if self.bak_mode == 'normal':
-                self.data.append(KeyData(datetime.now(), False, *key_repl))
+                self.data.append(KeyData(datetime.now(), event.keysym, False, *key_repl))
                 return True
             else:
                 if not len(self.data):
@@ -436,7 +443,7 @@ class LabelManager:
                 if pop:
                     self.data.pop()
                 else:
-                    self.data.append(KeyData(datetime.now(), False, *key_repl))
+                    self.data.append(KeyData(datetime.now(), event.keysym, False, *key_repl))
                 return True
 
         # Regular keys
@@ -481,7 +488,7 @@ class LabelManager:
                     state = event.modifiers[symbol.lower()]
                     repl += '(%s)' % (_('off') if state else _('on'))
 
-                self.data.append(KeyData(datetime.now(), False, key_repl.bk_stop,
+                self.data.append(KeyData(datetime.now(), event.keysym, False, key_repl.bk_stop,
                                          key_repl.silent, key_repl.spaced, repl))
                 return True
         else:
@@ -489,7 +496,7 @@ class LabelManager:
                 repl = mod + key_repl.repl
             else:
                 repl = mod + '‟' + key_repl.repl + '”'
-            self.data.append(KeyData(datetime.now(), True, key_repl.bk_stop,
+            self.data.append(KeyData(datetime.now(), event.keysym, True, key_repl.bk_stop,
                                      key_repl.silent, key_repl.spaced, repl))
             return True
 
@@ -522,14 +529,14 @@ class LabelManager:
                 state = event.modifiers[symbol.lower()]
                 repl += '(%s)' % (_('off') if state else _('on'))
 
-            self.data.append(KeyData(datetime.now(), False, key_repl.bk_stop,
+            self.data.append(KeyData(datetime.now(), event.keysym, False, key_repl.bk_stop,
                                      key_repl.silent, key_repl.spaced, repl))
         else:
             if self.mods_mode == 'emacs' or key_repl.repl[0] != mod[-1]:
                 repl = mod + key_repl.repl
             else:
                 repl = mod + '‟' + key_repl.repl + '”'
-            self.data.append(KeyData(datetime.now(), True, key_repl.bk_stop,
+            self.data.append(KeyData(datetime.now(), event.keysym, True, key_repl.bk_stop,
                                      key_repl.silent, key_repl.spaced, repl))
         return True
 
@@ -565,7 +572,7 @@ class LabelManager:
             markup = GLib.markup_escape_text("M{}".format(event.btn - 4))
 
             # show as label, treated the same as keyboard button presses
-            self.data.append(KeyData(datetime.now(), False, True,
+            self.data.append(KeyData(datetime.now(), event.keysym, False, True,
                          True, True, markup))
             self.update_text()
         else:

@@ -117,6 +117,7 @@ class Screenkey(Gtk.Window):
                             'screen': 0,
                             'start_disabled': False,
                             'mouse': False,
+                            'only_pressed': False,
                             'button_hide_duration': 1})
         self.options = self.load_state()
         if self.options is None:
@@ -506,6 +507,7 @@ class Screenkey(Gtk.Window):
                                       bak_mode=self.options.bak_mode,
                                       mods_mode=self.options.mods_mode,
                                       mods_only=self.options.mods_only,
+                                      pressed_only=self.options.only_pressed,
                                       multiline=self.options.multiline,
                                       vis_shift=self.options.vis_shift,
                                       vis_space=self.options.vis_space,
