@@ -88,6 +88,8 @@ def main():
                     help=_("show version of screenkey"))
     ap.add_argument("-M", "--mouse", action="store_true", default=None,
                     help=_("show the mouse buttons"))
+    ap.add_argument("--only-pressed", action="store_true", default=None,
+                    help=_("Show keys only while in pressed state"))
     ap.add_argument("--mouse-fade", type=float, dest='button_hide_duration',
                     help=_("Mouse buttons fade duration in seconds"))
     args = ap.parse_args()
@@ -99,7 +101,7 @@ def main():
                 'key_mode', 'bak_mode', 'mods_mode', 'mods_only',
                 'multiline', 'vis_shift', 'vis_space', 'screen',
                 'no_systray', 'opacity', 'ignore', 'compr_cnt',
-                'start_disabled', 'mouse', 'button_hide_duration']:
+                'start_disabled', 'mouse', 'only_pressed', 'button_hide_duration']:
         if getattr(args, arg) is not None:
             options[arg] = getattr(args, arg)
 
